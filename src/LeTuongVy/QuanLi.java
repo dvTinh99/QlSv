@@ -184,11 +184,11 @@ public class QuanLi {
 		table.setBounds(10, 237, 531, 164);
 		frame.getContentPane().add(table);
 		
-//		JScrollPane scrollPane = new JScrollPane();
-//		scrollPane.setBounds(10, 238, 531, 163);
-//		scrollPane.setViewportView(table);
-//		
-	//	frame.getContentPane().add(scrollPane);
+		JScrollPane scrollPane = new JScrollPane();
+		scrollPane.setBounds(10, 238, 531, 163);
+		scrollPane.setViewportView(table);
+		
+		frame.getContentPane().add(scrollPane);
 	
 	}
 	private void clear() {
