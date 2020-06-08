@@ -6,6 +6,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -28,6 +29,7 @@ public class QuanLi {
 	private static String header[]= new String [] {"Ma Nhan Vien","Ten","Tuoi","Email","Luong"};
 	static DefaultTableModel dtm = new DefaultTableModel(header,0); 
 	private JTable table;
+	private JTextField txtSearch;
 
 	/**
 	 * Launch the application.
@@ -114,6 +116,12 @@ public class QuanLi {
 		textLuong.setColumns(10);
 		
 		JButton btnNew = new JButton("New");
+		btnNew.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				reload();
+				dtm.fireTableDataChanged();
+			}
+		});
 		btnNew.setBounds(433, 39, 89, 23);
 		frame.getContentPane().add(btnNew);
 		
@@ -121,15 +129,19 @@ public class QuanLi {
 		btnSave.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					//handle();
-					String maNhanVien = textMa.getText();
-					String name = textName.getText() ;
-					int age =Integer.parseInt(textAge.getText());
-					String email = textEmail.getText();
-					String luong = textLuong.getText();
-					NhanVien nhanVien = new NhanVien(maNhanVien, name, age, email, luong);
-					arrNhanVien.add(nhanVien);
-					reload();
+					FormNhanVien formNhanVien = new FormNhanVien();
+					if (formNhanVien.Validate(textMa, textName, textAge, textEmail, textLuong)) {
+						//handle();
+						String maNhanVien = textMa.getText();
+						String name = textName.getText() ;
+						int age =Integer.parseInt(textAge.getText());
+						String email = textEmail.getText();
+						String luong = textLuong.getText();
+						NhanVien nhanVien = new NhanVien(maNhanVien, name, age, email, luong);
+						arrNhanVien.add(nhanVien);
+						reload();
+					}
+					
 				} catch (Exception e2) {
 					JOptionPane.showMessageDialog(frame, "them day du thong tin");
 				}
@@ -161,12 +173,46 @@ public class QuanLi {
 		JButton btnFind = new JButton("Find");
 		btnFind.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				NhanVien nv = new NhanVien() ;
+				for (NhanVien nhanVien : arrNhanVien) {
+					if (Integer.parseInt(nhanVien.getMaNhanVien())==Integer.parseInt(txtSearch.getText())) {
+						nv = nhanVien ;
+					}
+				}
+				FormNhanVien formNV = new FormNhanVien();
+				
+				formNV.txtAge.setText(String.valueOf(nv.getAge()));
+				formNV.txtEmail.setText(nv.getEmail());
+				formNV.txtLuong.setText(nv.getLuong());
+				formNV.txtName.setText(nv.getName());
+				formNV.txtMa.setText(nv.getMaNhanVien());
+				formNV.setVisible(true);
 			}
 		});
-		btnFind.setBounds(433, 132, 89, 23);
+		btnFind.setBounds(331, 130, 89, 23);
 		frame.getContentPane().add(btnFind);
 		
 		JButton btnOpen = new JButton("Open");
+		btnOpen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					int select = table.getSelectedRow();
+					NhanVien nhanVien = arrNhanVien.get(select) ;
+					FormNhanVien form = new FormNhanVien();
+					form.setVisible(true);
+					form.position = select ;
+					form.txtMa.setText(nhanVien.getMaNhanVien());
+					form.txtEmail.setText(nhanVien.getEmail());
+					form.txtName.setText(nhanVien.getName());
+					form.txtLuong.setText(nhanVien.getLuong());
+					form.txtAge.setText(String.valueOf(nhanVien.getAge()));
+					
+				} catch (Exception e2) {
+					System.out.println("something was wrong");
+					
+				}
+			}
+		});
 		btnOpen.setBounds(433, 166, 89, 23);
 		frame.getContentPane().add(btnOpen);
 		
@@ -189,6 +235,11 @@ public class QuanLi {
 		scrollPane.setViewportView(table);
 		
 		frame.getContentPane().add(scrollPane);
+		
+		txtSearch = new JTextField();
+		txtSearch.setBounds(433, 130, 86, 20);
+		frame.getContentPane().add(txtSearch);
+		txtSearch.setColumns(10);
 	
 	}
 	private void clear() {
@@ -198,7 +249,22 @@ public class QuanLi {
 		textName.setText("");
 		textLuong.setText("");
 	}
-	private void reload() {
+	public void UpdateNhanVien(NhanVien nhanVien) {
+		for (NhanVien nv : arrNhanVien) {
+			if(nv!=null && nhanVien.getMaNhanVien()==nv.getMaNhanVien()) {
+		        nv.setEmail(nhanVien.getEmail());
+		        nv.setAge(nhanVien.getAge());
+		        nv.setLuong(nhanVien.getLuong());
+		        nv.setMaNhanVien(nhanVien.getMaNhanVien());
+		        nv.setName(nhanVien.getName());
+		        break;
+		    }
+		}
+		reload();
+		dtm.fireTableDataChanged();
+		
+	}
+	public void reload() {
 		dtm.setRowCount(0);
 		for (NhanVien nhanVien : arrNhanVien) {
 			Object[] objs = {nhanVien.getMaNhanVien(),
@@ -209,5 +275,27 @@ public class QuanLi {
 			dtm.addRow(objs);
 		}
 		clear();
+	}
+	public void search(String maNV) {
+		NhanVien nv = new NhanVien();
+//		for (int i = 0; i <= arrNhanVien.size(); i++) {
+//			if (arrNhanVien.get(i).getMaNhanVien().equals(maNV)) {
+//				nv.setAge(arrNhanVien.get(i).getAge());
+//				nv.setEmail(arrNhanVien.get(i).getEmail());
+//				nv.setLuong(arrNhanVien.get(i).getLuong());
+//				nv.setMaNhanVien(arrNhanVien.get(i).getMaNhanVien());
+//				nv.setName(arrNhanVien.get(i).getName());
+//				System.out.println(arrNhanVien.get(i).getName());
+//			}
+			
+//		}
+		for (NhanVien nhanVien : arrNhanVien) {
+			System.out.println(nhanVien.getMaNhanVien());
+//			if (nhanVien.getMaNhanVien().equals(maNV)) {
+//				System.out.println(nhanVien);
+//				return nhanVien;
+//			}
+		}
+//		return nv;
 	}
 }
